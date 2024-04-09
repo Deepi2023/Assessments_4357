@@ -1,0 +1,78 @@
+1)
+select customerid, month,year,dataused
+from customerinteractions
+where month='March' and year='2024'and dataused> (select avg(dataused) from customerinteractions);;
+
+2)
+select customerid, month, year ,sum(callduration)
+from customerinteractions
+group by month,year,customerid 
+order by sum(callduration) desc;
+
+3)
+
+select customerid,month , messagecount, dataused
+from customerinteractions
+order by dataused desc;
+
+4)
+
+select producttypeid, sum(totalSalesamount)
+from quarterlysales
+group by producttypeid
+order by sum(totalsalesamount) desc;
+
+5)
+
+select producttypeid,quarter, sum(totalsalesamount)
+from quarterlysales
+where quarter='Q1'
+group by producttypeid,quarter
+order by sum(TotalSalesAmount) desc, quarter asc;
+
+6)
+
+select producttypeid,quarter,year,totalsalesamount/unitssold
+from quarterlysales
+where producttypeid=1 and quarter='Q2' and year='2024';
+
+7)
+
+select region, ConsumptionKWh
+from sectorenergyconsumption
+where energysource='solar' or 'wind' and month='March' AND ConsumptionKWh>(SELECT AVG(ConsumptionKWh) FROM sectorenergyconsumption)
+
+
+8)
+
+select  sector ,sum(ConsumptionKWh),month
+from sectorenergyconsumption
+group by sector,month
+order by sum(ConsumptionKWh) desc;
+
+9)
+
+
+select energysource,sum(ConsumptionKWh)
+from sectorenergyconsumption
+where month='February'
+group by energysource
+order by sum(ConsumptionKWh) desc;
+
+10)
+select policyid, customername
+from insuranceactivities
+WHERE FEEDBACKSCORE>( SELECT avg(FEEDBACKSCORE) from insuranceactivities);
+
+11)
+
+select policyid,customername,sum(annualpremium),claimscount
+from insuranceactivities
+where claimscount>1 or claimscount=1
+group by policyid,customername,claimscount
+order by claimscount desc;
+
+12)
+select policyType, ClaimsCount
+from insuranceactivities
+WHERE FEEDBACKSCORE>( SELECT avg(FEEDBACKSCORE) from insuranceactivities);
