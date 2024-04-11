@@ -1,0 +1,112 @@
+1)
+
+select machine_id, month(maintenance_date),sum(cost) as total
+from l1_maintenance_records
+where month(maintenance_date)=3 
+group by maintenance_date,machine_id
+Having total>(select avg(cost) from l1_maintenance_records);
+
+2)
+
+SELECT MAINTENANCE_TYPE ,COUNT(MACHINE_ID) 
+FROM l1_maintenance_records
+WHERE MONTH(maintenance_date)=3 AND YEAR (maintenance_date)=2024
+GROUP BY MAINTENANCE_TYPE
+ORDER BY COUNT(MACHINE_ID) DESC;
+
+3)
+
+SELECT TECHNICIAN_NAME, COUNT(MACHINE_ID), AVG(COST)
+FROM l1_maintenance_records
+WHERE MONTH(maintenance_date)=3 AND YEAR(maintenance_date)=2024
+GROUP BY TECHNICIAN_NAME
+ORDER BY AVG(COST) DESC;
+
+4)
+
+SELECT PRODUCT_ID, AVG(incident_count_pre_update-incident_count_post_update)AS AVERAGE 
+FROM L2_UPDATES
+GROUP BY PRODUCT_ID
+ORDER BY AVERAGE ;
+
+5)
+
+SELECT UPDATE_ID , AVG(incident_count_pre_update-incident_count_post_update)AS AVERAGE ,USER_FEEDBACK_SCORE
+FROM L2_UPDATES
+GROUP BY UPDATE_ID
+ORDER BY user_feedback_score DESC;
+
+6)
+
+SELECT UPDATE_ID , AVG(incident_count_pre_update-incident_count_post_update)AS AVERAGE ,USER_FEEDBACK_SCORE,
+case 
+when AVG(incident_count_pre_update-incident_count_post_update)<=10 THEN "iMPROVEMENT NEEDED"
+ELSE "NICE WORK"
+END AS FEEDBACK
+FROM L2_UPDATES
+GROUP BY UPDATE_ID
+ORDER BY user_feedback_score ASC;
+
+7)
+
+SELECT P.PATIENT_NAME, COUNT(V.FACILITY_ID),V.reason_for_visit,T.OUTCOME
+FROM l3_patients AS P
+JOIN l3_visits AS V
+USING (PATIENT_ID)
+JOIN l3_treatments AS T
+USING (VISIT_ID)
+WHERE MONTH(V.visit_date)=3 AND YEAR(V.VISIT_DATE)=2024
+GROUP BY P.PATIENT_NAME,V.reason_for_visit,T.OUTCOME;
+
+8)
+
+SELECT F.FACILITY_NAME, COUNT(V.VISIT_ID),V.reason_for_visit
+FROM l3_visits AS V
+JOIN l3_facilities AS F
+USING (FACILITY_ID)
+WHERE MONTH(V.VISIT_DATE)=3 AND YEAR(V.visit_date)=2024 AND V.reason_for_visit="EMERGENCY"
+GROUP BY F.FACILITY_NAME,V.reason_for_visit;
+
+9)
+
+SELECT P.patient_NAME,T.outcome,P.insurance_provider
+FROM l3_patients AS P
+JOIN l3_visits AS V
+USING (PATIENT_ID)
+JOIN l3_treatments AS T
+USING (VISIT_ID)
+WHERE MONTH(VISIT_DATE) IN (1,2,3) AND T.OUTCOME="COMPLICATED";
+
+10)
+
+SELECT  P.PRODUCT_NAME , P.CATEGORY, SUM(S.QUANTITY)
+FROM l4_products AS P
+JOIN l4_sales AS S
+USING (PRODUCT_ID)
+WHERE MONTH(S.sale_date)=3 AND YEAR(S.sale_date)=2024
+GROUP BY P.PRODUCT_NAME , P.CATEGORY
+LIMIT 1;
+
+11)
+
+CREATE VIEW TOTALS AS 
+SELECT ST.REGION, S.QUANTITY*P.PRICE AS SALES_TOTAL
+FROM l4_stores AS ST
+JOIN l4_sales AS S
+USING (STORE_ID)
+JOIN l4_products AS P
+USING ( PRODUCT_ID)
+WHERE MONTH(S.sale_date) IN(1,2,3) AND YEAR(S.sale_date)=2024
+GROUP BY ST.REGION
+ORDER BY SALES_TOTAL DESC;
+
+12)
+
+SELECT P.PRODUCT_NAME,ST.REGION,COUNT(REGION)
+FROM l4_products AS P
+LEFT JOIN l4_SALES AS S
+USING (PRODUCT_ID)
+RIGHT JOIN L4_STORES AS ST
+USING (STORE_ID)
+WHERE P.PRODUCT_NAME IS NULL OR ST.REGION IS NULL
+GROUP BY P.PRODUCT_NAME,ST.REGION;
