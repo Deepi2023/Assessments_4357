@@ -1,0 +1,204 @@
+1)
+
+select p.product_category,avg(s.sales_amount)
+from products as p
+inner join sales_records as s
+using (product_id)
+join customers as c
+using (customer_id)
+where s.sales_date <= date_sub(curdate() ,Interval 30 day) and customer_id=1
+group by p.product_category;
+
+2)
+
+select p.product_name, sum(s.sales_amount)as total,
+rank() over (order by sum(s.sales_amount))
+from products as p
+inner join sales_records as s
+using (product_id)
+group by p.product_name
+limit 3;
+
+3)
+
+select c.customer_name, sum(s.sales_amount),
+percent_rank() over( order by sum(s.sales_amount) )
+from sales_records as s
+join customers as c
+using (customer_id)
+group by c.customer_name;
+
+4)
+
+select c.customer_id,count(s.record_id) ,
+(case 
+when count(s.record_id) >=4  then 'consisten_byers'
+else 'Occassional_buyers'
+end ) as performance
+from customers as c
+inner join sales_records as s
+using (customer_id)
+where s.sales_date >=date_sub(curdate(),interval 6 month )
+group by c.customer_id;
+
+5)
+
+select f.departure_airport, f.arrival_airport, avg (t.ticket_price) as average_
+from flights as f
+inner join tickets as t
+using (flight_id)
+group by f.departure_airport,f.arrival_airport
+order by average_ desc;
+
+6)
+
+select f.flight_number,f.departure_date, count(t.passenger_id) as ticket_sold
+from flights as f
+inner join tickets as t
+using (flight_id)
+where t.ticket_date >=date_sub(curdate(),interval 1 month)
+group by  f.flight_number,f.departure_date
+order by ticket_sold desc;
+
+7)
+
+with a1 as (
+select p.passenger_name, count(t.ticket_id) as total_ticket,p.frequent_flyer_status,t.ticket_price
+from tickets as t
+inner join passengers as p
+using (passenger_id)
+group by p.passenger_name,p.frequent_flyer_status,t.ticket_price)
+select passenger_name,frequent_flyer_status,sum(ticket_price * total_ticket)
+from a1
+group by passenger_name,frequent_flyer_status
+limit 5;
+
+8)
+
+select f.flight_id,f.flight_number,month(ticket_date),count(ticket_id)
+from tickets
+join flights as f
+group by month(ticket_date), f.flight_id,f.flight_number;
+
+9)
+
+select p.player_id,g.game_genre,p1.play_date,
+lead(play_date) over (partition by g.game_genre order by player_id ) as lead_,
+ (lead(play_date) over (partition by g.game_genre order by player_id ))-p1.play_date as difference_
+from players as p
+inner join playerscores as p1
+using (player_id)
+inner join games as g
+using(game_id);
+
+10)
+
+select g.game_name,count(p1.player_id) as no_of_players
+from players as p
+inner join playerscores as p1
+using (player_id)
+inner join games as g
+using(game_id)
+group by g.game_name
+order by no_of_players desc
+limit 3;
+
+11)
+
+select g.game_id,g.game_name,
+avg(score) over(partition by game_id order by score desc ) as avg_,
+p1.score,
+rank() over (partition by game_id order by score desc) as rank_
+from players as p
+inner join playerscores as p1
+using (player_id)
+inner join games as g
+using(game_id);
+
+12)
+
+select 
+p.player_id,count(p1.game_id)as count_,p.registration_date,max(p1.play_date) as max_
+from players as p
+inner join playerscores as p1
+using (player_id)
+group by p.player_id,p.registration_date 
+having max(p1.play_date)<=date_sub(curdate(),interval 1 month);
+
+13)
+
+select d.doctor_name,sum(t.cost) as total_cost
+from doctors as d
+inner join treatments as t
+group by d.doctor_name
+order by total_cost desc
+limit 5;
+
+14)
+
+select t.treatment_name, sum(t.cost)as cost_ ,
+percent_rank() over(order by sum(t.cost) ) as contribution
+from doctors as d
+inner join treatments as t
+group by t.treatment_name;
+
+15)
+
+select p.patient_id,p.patient_name, p.admission_date,p.discharge_date,p.discharge_date- p.admission_date as dif_,max(p.admission_date) as max_
+from treatments as t
+inner join patients as p
+using (patient_id)
+group by  p.patient_id,p.patient_name
+having max(p.admission_date)- p.admission_date < 30
+order by p.admission_date asc;
+
+16)
+
+select 
+gender,diagnosis, round(avg(discharge_date-admission_date),2) as length_
+from patients
+group by gender,diagnosis
+order by length_ desc;
+
+17)
+
+select c.department,e.semester,
+avg(e.grade) over(partition by c.department,e.semester order by c.department,e.semester)
+ from courses as c
+inner join enrollments as e
+using (course_id);
+
+18)
+
+select s.major,count(e.student_id) as no_oF_students,s.enrollment_year
+from enrollments as e
+inner join students as s
+using (student_id)
+group by s.major,s.enrollment_year
+order by no_oF_students desc;
+
+19)
+
+
+select s.student_id,s.student_name ,e.semester,sum(e.grade) as total_credits
+from enrollments as e
+inner join students as s
+group by s.student_id,s.student_name ,e.semester
+order by total_credits desc
+
+20)
+
+with a2 as(
+select c.course_name, s.enrollment_year,
+count(e.student_id) over (partition by s.enrollment_year ) as count_ 
+from courses as c
+inner join enrollments as e
+using (course_id)
+inner join students as s
+using (student_id)
+order by count_ desc)
+select course_name,enrollment_year,count_,
+rank() over (partition by course_name order by count_ desc)
+from a2;
+
+
